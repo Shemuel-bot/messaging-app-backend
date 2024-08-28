@@ -1,4 +1,4 @@
-const PrismaClient = require('@prisma/client');
+const { PrismaClient } = require('@prisma/client');
 const asyncHandler = require('express-async-handler');
 const {body, validationResult} = require('express-validator');
 const passport = require('passport');
@@ -66,7 +66,6 @@ exports.get_users = asyncHandler(async (req, res) => {
 
 exports.get_chats = asyncHandler(async (req, res) => {
     const chats = [];
-    const ids = []
     const messages = await prisma.message.findMany({
         where:{
             from: req.user.id
@@ -88,40 +87,17 @@ exports.get_chats = asyncHandler(async (req, res) => {
     });
 })
 
-exports.get_messages = asyncHandler(async (req, res) => {
-    const messages = await prisma.message.findMany({
-        where: {
-            from: req.user.id,
-            to: req.body.userId
+exports.log_out = asyncHandler(async () => {
+    req.logout((err) => {
+        if (err) {
+          return next(err);
         }
-    })
-
-    res.json({
-        messages: messages,
-    })
+        res.json({
+            message: 'success',
+        })
+      });
 })
 
-exports.send_message = [
-    body('message', 'message must not be empty')
-        .trim()
-        .isLength({ min: 1 })
-        .escape(),
-    asyncHandler(async (req, res) => {
-        const errors = validationResult(req);
-
-        if(!errors.isEmpty){
-            console.log('type something')
-        }else{
-            await prisma.message.create({
-                data: {
-                    message:req.body.message,
-                    from: req.user.id,
-                    to: req.body.userId,
-                }
-            })
-        }
-    })
-]
 
 
 passport.use(
