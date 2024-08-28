@@ -16,9 +16,9 @@ router.post('/sign-up', UserController.sign_up);
 
 router.get('/get-people', UserController.get_users);
 
-route.get('/get-chats', UserController.get_chats);
+router.get('/get-chats', UserController.get_chats);
 
-route.post('/log-out', UserController.log_out);
+router.post('/log-out', UserController.log_out);
 
 
 router.post('/get-messages', MessageContoller.get_messages);
