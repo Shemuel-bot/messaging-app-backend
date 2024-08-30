@@ -2,7 +2,6 @@ var express = require('express');
 var router = express.Router();
 const UserController = require('../controllers/UserController');
 const MessageContoller = require('../controllers/MessageController');
-const { route } = require('.');
 
 
 /* GET home page. */
@@ -10,20 +9,42 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
-router.post('/log-in', UserController.log_in);
+router.post('/api/log-in', UserController.log_in);
 
-router.post('/sign-up', UserController.sign_up);
+router.post('/api/sign-up', UserController.sign_up);
 
-router.get('/get-people', UserController.get_users);
+router.get('/api/get-people', UserController.get_users);
 
-router.get('/get-chats', UserController.get_chats);
+router.get('/api/get-chats', UserController.get_chats);
 
-router.post('/log-out', UserController.log_out);
+router.post('/api/log-out', UserController.log_out);
 
 
-router.post('/get-messages', MessageContoller.get_messages);
+router.get('/api/home', verifyToken, UserController.user_names_match);
 
-router.post('/send-message', MessageContoller.send_message);
+
+router.post('/api/get-messages', MessageContoller.get_messages);
+
+router.post('/api/send-message', MessageContoller.send_message);
+
+
+function verifyToken (req, res, next){
+  const bearerHeader = req.headers['authorization'];
+  
+if(typeof bearerHeader !== 'undefined' &&  bearerHeader !== 'null'){
+
+    const bearer = bearerHeader.split(' ');
+   
+    const bearerToken = bearer[1];
+  
+    req.token = bearerToken;
+    
+    next();
+  }else{
+      
+    res.send(403);
+  }
+}
 
 
 module.exports = router;

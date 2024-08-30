@@ -4,6 +4,7 @@ const {body, validationResult} = require('express-validator');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const prisma = new PrismaClient();
 
@@ -20,7 +21,6 @@ exports.sign_up = [
     body('email', 'email must not be empty')
         .trim()
         .isLength({ min: 1 })
-        .isEmail()
         .escape(),
     body('password', 'password must not be empty')
         .trim()
@@ -28,6 +28,7 @@ exports.sign_up = [
         .escape(),
     asyncHandler(async (req, res) => {
         const errors = validationResult(req);
+        const a = await prisma.user.findMany();
         const password = await bcrypt.hash(req.body.password, 10)
                             .then(hash => hash)
                             .catch(err => {console.log(err.message)})
@@ -38,21 +39,65 @@ exports.sign_up = [
                 message: false
             })
         }else{
-            prisma.user.create({
+            
+            await prisma.user.create({
                 data:{
                     firstName: req.body.firstName,
                     lastName: req.body.lastName,
                     email: req.body.email,
                     password: password,
+                    about: 'Its me!'
                 }
+            })
+            res.json({
+                message: true
             })
         }
     })
 ]
 
-exports.log_in = passport.authenticate('local',{
-    successMessage: true,
-    failureMessage: false,
+exports.log_in = asyncHandler(async (req, res) => {
+    
+    const user = await prisma.user.findUnique({
+        where:{
+            email: req.body.email,
+        }
+    })
+    
+    if (!user) {
+      res.json({
+        message: false,
+      })
+    };
+    
+    const match = await bcrypt.compare(req.body.password, user.password);
+    
+    if (!match) {
+        res.json({
+            message: false,
+        })
+    }
+
+    jwt.sign({ user }, 'mysecretkey', { expiresIn: '2 days'}, (err, token) =>{
+        res.json({
+            message: token
+        })
+    })
+
+})
+
+exports.user_names_match = asyncHandler(async (req, res)=>{
+    jwt.verify(req.token, 'mysecretkey', async (err, authData) => {
+        if (err) {
+            
+            res.send(403); 
+        }else{
+            if(req.body.userName === authData.user.userName){
+                res.json({value: true});
+            }
+            res.json({value: false});
+        }
+    })
   });
 
 exports.get_users = asyncHandler(async (req, res) => {
@@ -108,6 +153,7 @@ passport.use(
                 email: email,
             }
         })
+        console.log(user)
         if (!user) {
           return done(null, false, { message: "Incorrect username" });
         };
