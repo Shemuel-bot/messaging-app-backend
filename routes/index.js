@@ -13,7 +13,7 @@ router.post('/api/log-in', UserController.log_in);
 
 router.post('/api/sign-up', UserController.sign_up);
 
-router.post('/api/update', UserController.update_user)
+router.post('/api/update', verifyToken, UserController.update_user)
 
 router.get('/api/get-people', verifyToken, UserController.get_users);
 

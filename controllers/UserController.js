@@ -87,9 +87,10 @@ exports.update_user = asyncHandler(async (req, res) => {
       res.json({ value: false });
     } else {
       if (req.body.password.length > 1) {
-        const password = await bcrypt.hash(req.body.password, 10)
-                                .then(hash => hash)
-                                .catch(err => console.log(err));
+        const password = await bcrypt
+          .hash(req.body.password, 10)
+          .then((hash) => hash)
+          .catch((err) => console.log(err));
         await prisma.user.update({
           where: {
             id: authData.user.id,
@@ -98,24 +99,34 @@ exports.update_user = asyncHandler(async (req, res) => {
             firstName: req.body.firstName,
             lastName: req.body.lastName,
             email: req.body.email,
-            password: req.body.password,
+            password: password,
             about: req.body.about,
           },
         });
-      }else{
+      } else {
         await prisma.user.update({
-            where: {
-              id: authData.user.id,
-            },
-            data: {
-              firstName: req.body.firstName,
-              lastName: req.body.lastName,
-              email: req.body.email,
-              about: req.body.about,
-            },
-          });
+          where: {
+            id: authData.user.id,
+          },
+          data: {
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            email: req.body.email,
+            about: req.body.about,
+          },
+        });
       }
-      res.json({ value: true })
+      const user = await prisma.user.findUnique({
+        where: {
+            id: authData.user.id
+        }
+      })
+      console.log(req.body)
+      jwt.sign({ user }, "mysecretkey", { expiresIn: "2 days" }, (err, token) => {
+        res.json({
+          value: token,
+        });
+      });
     }
   });
 });
