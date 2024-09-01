@@ -18,8 +18,17 @@ exports.get_messages = asyncHandler(async (req, res) => {
         }else{
             const messages = await prisma.message.findMany({
                 where: {
-                    from: authData.user.id,
-                    to: req.body.userId
+                    OR:[
+                        {
+                            from: authData.user.id,
+                            to: req.body.userId
+                        },
+                        {
+                            to: authData.user.id,
+                            from: req.body.userId
+                        }
+                    ]
+                    
                 }
             })
             res.json({
