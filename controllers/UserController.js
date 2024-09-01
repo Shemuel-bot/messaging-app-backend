@@ -24,7 +24,6 @@ exports.sign_up = [
     .escape(),
   asyncHandler(async (req, res) => {
     const errors = validationResult(req);
-    const a = await prisma.user.findMany();
     const password = await bcrypt
       .hash(req.body.password, 10)
       .then((hash) => hash)
