@@ -13,9 +13,9 @@ router.post('/api/log-in', UserController.log_in);
 
 router.post('/api/sign-up', UserController.sign_up);
 
-router.get('/api/get-people', UserController.get_users);
+router.get('/api/get-people', verifyToken, UserController.get_users);
 
-router.get('/api/get-chats', UserController.get_chats);
+router.get('/api/get-chats', verifyToken, UserController.get_chats);
 
 router.post('/api/log-out', UserController.log_out);
 
@@ -23,9 +23,9 @@ router.post('/api/log-out', UserController.log_out);
 router.get('/api/home', verifyToken, UserController.user_names_match);
 
 
-router.post('/api/get-messages', MessageContoller.get_messages);
+router.post('/api/get-messages', verifyToken, MessageContoller.get_messages);
 
-router.post('/api/send-message', MessageContoller.send_message);
+router.post('/api/send-message', verifyToken, MessageContoller.send_message);
 
 
 function verifyToken (req, res, next){

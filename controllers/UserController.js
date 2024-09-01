@@ -89,47 +89,70 @@ exports.log_in = asyncHandler(async (req, res) => {
 exports.user_names_match = asyncHandler(async (req, res)=>{
     jwt.verify(req.token, 'mysecretkey', async (err, authData) => {
         if (err) {
-            
-            res.send(403); 
+            res.json({value: false}); 
         }else{
-            if(req.body.userName === authData.user.userName){
-                res.json({value: true});
-            }
-            res.json({value: false});
+            res.json({value: true});
         }
     })
   });
 
 exports.get_users = asyncHandler(async (req, res) => {
-    const users = await prisma.user.findMany();
-
-    res.json({
-        users: users,
+    jwt.verify(req.token, 'mysecretkey', async (err, authData) => {
+        if (err) {
+            res.json({value: false}); 
+        }else{
+            const users = await prisma.user.findMany();
+            const filtered = []
+            users.forEach(x => {
+                if(x.email !== authData.user.email)
+                    filtered.push(x)
+            })
+        
+            res.json({
+                users: filtered,
+            })
+        }
     })
+    
 
 })
 
 exports.get_chats = asyncHandler(async (req, res) => {
-    const chats = [];
-    const messages = await prisma.message.findMany({
-        where:{
-            from: req.user.id
+    jwt.verify(req.token, 'mysecretkey', async (err, authData) => {
+        if (err) {
+            res.json({value: false}); 
+        }else{
+            const list = [];
+            const conditions = [];
+            const messages = await prisma.message.findMany({
+                where:{
+                    from: authData.user.id
+                }
+            })
+            
+            messages.forEach(element => {
+               if(!list.includes(element.to))
+                    list.push(element.to)
+            });
+
+            list.forEach(element => {
+                conditions.push({
+                    id: element
+                })
+            })
+
+            const chats = await prisma.user.findMany({
+                where: {
+                    OR: conditions,
+                }
+            })
+
+            res.json({
+                chats: chats
+            });
         }
     })
-
-    messages.forEach(async element => {
-        const user = await prisma.findUnique({
-            where:{
-                id: element.to,
-            }
-        })
-        if(!chats.includes(user))
-            chats.push(user);
-    });
-
-    res.json({
-        chats: chats
-    });
+    
 })
 
 exports.log_out = asyncHandler(async () => {
