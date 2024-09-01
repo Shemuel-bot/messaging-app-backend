@@ -17,7 +17,10 @@ exports.sign_up = [
     .trim()
     .isLength({ min: 1 })
     .escape(),
-  body("email", "email must not be empty").trim().isLength({ min: 1 }).escape(),
+  body("email", "email must not be empty")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
   body("password", "password must not be empty")
     .trim()
     .isLength({ min: 1 })
@@ -53,11 +56,12 @@ exports.sign_up = [
 ];
 
 exports.log_in = asyncHandler(async (req, res) => {
-  const user = await prisma.user.findUnique({
+  const userMany = await prisma.user.findMany({
     where: {
       email: req.body.email,
     },
   });
+  const user = userMany[0];
 
   if (!user) {
     res.json({
