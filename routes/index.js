@@ -9,7 +9,7 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
-router.get('/api/log-in', UserController.log_in);
+router.post('/api/log-in', UserController.log_in);
 
 router.post('/api/sign-up', UserController.sign_up);
 
