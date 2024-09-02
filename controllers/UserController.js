@@ -56,12 +56,11 @@ exports.sign_up = [
 ];
 
 exports.log_in = asyncHandler(async (req, res) => {
-  const userMany = await prisma.user.findMany({
+  const user = await prisma.user.findUnique({
     where: {
       email: req.body.email,
     },
   });
-  const user = userMany[0];
 
   if (!user) {
     res.json({
