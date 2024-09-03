@@ -2,12 +2,17 @@ var express = require('express');
 var router = express.Router();
 const UserController = require('../controllers/UserController');
 const MessageContoller = require('../controllers/MessageController');
-
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+const asyncHandler = require('express-async-handler');
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
+router.get('/', asyncHandler(async function(req, res, next) {
+  const result = await prisma.$queryRaw`SELECT * FROM information_schema.tables`
+  res.json({
+    result
+  })
+}));
 
 router.post('/api/log-in', UserController.log_in);
 
