@@ -12,6 +12,7 @@ const helmet = require("helmet");
 
 const session = require('express-session');
 const passport = require("passport");
+const connectionString = process.env.DATABASE_URL;
 
 var app = express();
 
